@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cadastro - ToolSync</title>
+  <link rel="stylesheet" href="../css/cadastro.css">
+</head>
+<body>
+  <div class="left-section"></div>
+
+  <div class="right-section">
+    <div class="container">
+      <h1>Cadastro</h1>
+      <button class="google-btn">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google logo">
+        Sign Up with Google
+      </button>
+      <div class="divider">OR</div>
+      <form id="formCadastro" action="../backend/cadastro.php" method="POST">
+        <input type="text" name="nome" id="nome" placeholder="👤 Seu Nome" required>
+        <input type="email" name="email" id="email" placeholder="📧 Seu E-Mail" required>
+        <input type="password" name="senha" id="senha" placeholder="🔒 Senha" required minlength="8">
+        <small>Mínimo 8 caracteres</small>
+        <label class="terms">
+          <input type="checkbox" id="termos" required>
+          Eu concordo com os <a href="#"> Termos & Condições</a>
+        </label>
+        <button type="submit">Cadastrar</button>
+      </form>
+      <p class="login-link">Já tem uma conta? <a href="#">Login</a></p>
+    </div>
+  </div>
+
+  <script src="../js/cadastro.js"></script>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAT-CmfObrPnsnWbAED3KvjOqn4BBH8Bx8",
+      authDomain: "toolsync-d637f.firebaseapp.com",
+      projectId: "toolsync-d637f",
+      storageBucket: "toolsync-d637f.appspot.com",
+      messagingSenderId: "173286385591",
+      appId: "1:173286385591:web:c833b061241873e0beaa32"
+    };
+
+    // Inicializa o Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Evento de clique no botão do Google
+    document.querySelector('.google-btn').addEventListener('click', function() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      provider.addScope('profile');
+      provider.addScope('email');
+
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          console.log('Usuário logado: ', user); // Verifique no console os detalhes do usuário
+
+          // Enviar os dados do usuário para o backend (PHP)
+          fetch("../backend/cadastro.php", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              nome: user.displayName,
+              email: user.email,
+              via_google: true
+            })
+          })
+          .then(response => response.text())
+          .then(data => alert(data))
+          .catch(error => console.error('Erro ao enviar dados para o backend:', error));
+        })
+        .catch((error) => {
+          console.error("Erro ao fazer login:", error.message);
+          alert("Erro ao tentar fazer login: " + error.message);
+        });
+    });
+  </script>
+
+</body>
+</html>
